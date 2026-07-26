@@ -1,4 +1,4 @@
-# Filipino Cookbook — Client Application
+# Filipino Cookbook Client Application
 
 A premium web-based client application that consumes the **Filipino Cookbook API** to display traditional Filipino dishes, ingredients, categories, and recipes in a beautifully designed user interface.
 
@@ -20,7 +20,7 @@ A premium web-based client application that consumes the **Filipino Cookbook API
 
 ## Application Title
 
-**Filipino Cookbook — Discover Filipino Cuisine**
+**Filipino Cookbook**
 
 ---
 
@@ -78,14 +78,14 @@ filipino-cookbook-client-rimando/
 - XAMPP (Apache) or any local web server
 - A modern web browser (Chrome, Firefox, Edge)
 
-### Step 1 — Clone the Repository
+### Step 1 Clone the Repository
 
 ```bash
 git clone https://github.com/johnlouierimando/filipino-cookbook-client-rimando.git
 cd filipino-cookbook-client-rimando
 ```
 
-### Step 2 — Place in XAMPP Directory
+### Step 2 Place in XAMPP Directory
 
 Copy or move the project into your XAMPP htdocs folder:
 
@@ -93,7 +93,7 @@ Copy or move the project into your XAMPP htdocs folder:
 C:\xampp\htdocs\filipino-cookbook-client-rimando\
 ```
 
-### Step 3 — Set Up the API First
+### Step 3 Set Up the API First
 
 Make sure the Filipino Cookbook API is installed and running. Follow the installation instructions at:
 
@@ -104,7 +104,7 @@ The API must be accessible at:
 http://localhost/filipino-cookbook-api-ordono/public
 ```
 
-### Step 4 — Configure the API Connection
+### Step 4 Configure the API Connection
 
 Open `js/config.js` and verify the base URL and token match your installed API:
 
@@ -120,11 +120,11 @@ const API_CONFIG = {
 };
 ```
 
-### Step 5 — Start Apache in XAMPP
+### Step 5 Start Apache in XAMPP
 
 Open the XAMPP Control Panel and start **Apache**.
 
-### Step 6 — Open the Application
+### Step 6 Open the Application
 
 Navigate to:
 
@@ -152,35 +152,35 @@ All requests include the `Authorization: Bearer dmmmsu-cookbook-token-2026` head
 
 ## Screenshots
 
-### Home — Hero Section
-![Home hero section showing the Filipino Cookbook landing page with title and call-to-action buttons](screenshots/HOME_PUBLIC.png)
+### Home
+![Home showing the Filipino Cookbook landing page with title and call-to-action buttons](screenshots/HOME_PUBLIC.png)
 
 *Landing page with animated hero section, navigation bar, and call-to-action buttons.*
 
 ---
 
-### All Dishes — Food Grid with Category Filter
+### All Dishes Food Grid with Category Filter
 ![All Dishes page showing food cards with category filter pills](screenshots/ALL_DISHES.png)
 
 *Responsive food card grid with category filter pills at the top. Each card shows the dish name, category, origin, and a preview of instructions.*
 
 ---
 
-### Categories — Browse by Category
+### Categories Browse by Category
 ![Categories page showing category cards including All Dishes card](screenshots/CATEGORIES.png)
 
 *Category cards with dish counts. The gold "All Dishes" card is displayed first, followed by individual category cards.*
 
 ---
 
-### Search — Search Dishes by Name
+### Search Search Dishes by Name
 ![Search page showing search input and filtered results](screenshots/SEARCH_DISHES.png)
 
 *Search interface that performs a partial-name match against the API's search endpoint.*
 
 ---
 
-### Ingredients — Ingredients List View
+### Ingredients Ingredients List View
 ![Ingredients page displayed through the application](screenshots/INGREDIENTS.png)
 
 *Additional application view showing API data presented through the user interface.*
