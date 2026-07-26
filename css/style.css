@@ -508,6 +508,22 @@ body {
 
 .cat-btn { font-size: 0.85rem; padding: 0.5rem 1.25rem; }
 
+/* "All Dishes" card — gold accent */
+.category-card-all {
+  border-color: rgba(244, 166, 35, 0.35);
+  background: linear-gradient(135deg, rgba(244,166,35,0.08), var(--surface-2));
+}
+
+.category-card-all:hover {
+  border-color: var(--gold);
+  box-shadow: var(--shadow-card), 0 0 40px rgba(244,166,35,0.25);
+}
+
+.category-card-all .cat-name {
+  color: var(--gold);
+}
+
+
 /* ─── SEARCH ────────────────────────────────────── */
 .search-box-wrapper {
   display: flex;

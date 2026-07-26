@@ -50,9 +50,9 @@ function showSection(name) {
     const section = document.getElementById(`section-${name}`);
     if (section) {
       section.classList.remove('hidden');
-      // lazy load
-      if (name === 'foods'      && allFoods.length === 0)      loadFoods();
-      if (name === 'categories' && allCategories.length === 0)  loadCategories();
+      // Always render — data may already be cached from stats, but grid needs to be populated
+      if (name === 'foods')      loadFoods();
+      if (name === 'categories') loadCategories();
     }
   }
 
@@ -204,11 +204,26 @@ async function loadCategories() {
 
 function renderCategoryCards(categories, grid) {
   grid.innerHTML = '';
+
+  // ── "All Dishes" card first ──────────────────────────────
+  const allCard = document.createElement('div');
+  allCard.className = 'category-card category-card-all';
+  allCard.innerHTML = `
+    <div class="cat-emoji">🍽️</div>
+    <h3 class="cat-name">All Dishes</h3>
+    <p class="cat-count">${allFoods.length} dish${allFoods.length !== 1 ? 'es' : ''}</p>
+    <button class="btn btn-primary cat-btn" onclick="goToCategoryFoods('all')">
+      Browse All →
+    </button>
+  `;
+  grid.appendChild(allCard);
+
+  // ── Individual category cards ─────────────────────────────
   categories.forEach((cat, i) => {
     const count = allFoods.filter(f => f.category_name === cat.category_name).length;
     const card  = document.createElement('div');
     card.className = 'category-card';
-    card.style.animationDelay = `${i * 0.07}s`;
+    card.style.animationDelay = `${(i + 1) * 0.07}s`;
     card.innerHTML = `
       <div class="cat-emoji">${getCategoryEmoji(cat.category_name)}</div>
       <h3 class="cat-name">${cat.category_name}</h3>
@@ -221,13 +236,20 @@ function renderCategoryCards(categories, grid) {
   });
 }
 
+
 function goToCategoryFoods(categoryName) {
   showSection('foods');
   // slight delay to let section render
   setTimeout(() => {
-    const pill = [...document.querySelectorAll('.filter-pill')]
-      .find(p => p.dataset.category === categoryName);
-    if (pill) filterByCategory(categoryName, pill);
+    if (categoryName === 'all') {
+      // click the All pill
+      const allPill = document.querySelector('.filter-pill[data-category="all"]');
+      if (allPill) filterByCategory('all', allPill);
+    } else {
+      const pill = [...document.querySelectorAll('.filter-pill')]
+        .find(p => p.dataset.category === categoryName);
+      if (pill) filterByCategory(categoryName, pill);
+    }
   }, 300);
 }
 

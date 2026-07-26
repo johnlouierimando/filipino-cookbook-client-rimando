@@ -1,4 +1,4 @@
-﻿# Filipino Cookbook — Client Application
+# Filipino Cookbook — Client Application
 
 A premium web-based client application that consumes the **Filipino Cookbook API** to display traditional Filipino dishes, ingredients, categories, and recipes in a beautifully designed user interface.
 
@@ -152,7 +152,39 @@ All requests include the `Authorization: Bearer dmmmsu-cookbook-token-2026` head
 
 ## Screenshots
 
-> Screenshots of the user interface are included in the `screenshots/` folder.
+### Home — Hero Section
+![Home hero section showing the Filipino Cookbook landing page with title and call-to-action buttons](screenshots/HOME_PUBLIC.png)
+
+*Landing page with animated hero section, navigation bar, and call-to-action buttons.*
+
+---
+
+### All Dishes — Food Grid with Category Filter
+![All Dishes page showing food cards with category filter pills](screenshots/ALL_DISHES.png)
+
+*Responsive food card grid with category filter pills at the top. Each card shows the dish name, category, origin, and a preview of instructions.*
+
+---
+
+### Categories — Browse by Category
+![Categories page showing category cards including All Dishes card](screenshots/CATEGORIES.png)
+
+*Category cards with dish counts. The gold "All Dishes" card is displayed first, followed by individual category cards.*
+
+---
+
+### Search — Search Dishes by Name
+![Search page showing search input and filtered results](screenshots/SEARCH_DISHES.png)
+
+*Search interface that performs a partial-name match against the API's search endpoint.*
+
+---
+
+### Ingredients — Ingredients List View
+![Ingredients page displayed through the application](screenshots/INGREDIENTS.png)
+
+*Additional application view showing API data presented through the user interface.*
+
 
 ---
 
