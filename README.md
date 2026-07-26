@@ -212,4 +212,4 @@ The API is used for educational purposes with the permission of the developer.
 
 ---
 
-*Filipino Cookbook Client — Built with HTML, CSS & JavaScript*
+*Filipino Cookbook Client Built with HTML, CSS & JavaScript*
