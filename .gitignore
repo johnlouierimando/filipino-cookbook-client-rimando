@@ -1,0 +1,22 @@
+# ─────────────────────────────────────────────
+# Filipino Cookbook Client — .gitignore
+# ─────────────────────────────────────────────
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.idea/
+.vscode/
+*.code-workspace
+*.swp
+*.swo
+
+# Logs
+*.log
+error_log
+
+# Activity guide documents
+*.docx
+*.doc

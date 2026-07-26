@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Filipino Cookbook — Discover authentic Filipino recipes, ingredients, and culinary traditions through a beautifully crafted web application." />
+  <title>Filipino Cookbook — Discover Filipino Cuisine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- HEADER / NAVBAR                                         -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <header class="navbar" id="navbar">
+    <div class="navbar-brand">
+      <span class="brand-icon">🍲</span>
+      <span class="brand-name">Filipino <strong>Cookbook</strong></span>
+    </div>
+    <nav class="navbar-links">
+      <a href="#" class="nav-link active" id="nav-home" onclick="showSection('home')">Home</a>
+      <a href="#" class="nav-link" id="nav-foods" onclick="showSection('foods')">All Dishes</a>
+      <a href="#" class="nav-link" id="nav-categories" onclick="showSection('categories')">Categories</a>
+      <a href="#" class="nav-link" id="nav-search" onclick="showSection('search')">Search</a>
+    </nav>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- HERO SECTION                                            -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <section class="hero" id="section-home">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">Authentic Filipino Recipes</p>
+      <h1 class="hero-title">Taste the Heart<br/>of the Philippines</h1>
+      <p class="hero-subtitle">Explore traditional Filipino dishes — from Adobo to Halo-Halo — with rich ingredients, regional origins, and step-by-step instructions.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" id="btn-explore" onclick="showSection('foods')">Explore Dishes</button>
+        <button class="btn btn-ghost" onclick="showSection('categories')">Browse Categories</button>
+      </div>
+    </div>
+    <div class="hero-scroll-hint">
+      <span>Scroll to explore</span>
+      <div class="scroll-arrow">↓</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- STATS BAR                                               -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="stats-bar" id="section-stats">
+    <div class="stat-item">
+      <span class="stat-num" id="stat-foods">—</span>
+      <span class="stat-label">Filipino Dishes</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-num" id="stat-categories">—</span>
+      <span class="stat-label">Categories</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-num" id="stat-ingredients">—</span>
+      <span class="stat-label">Ingredients</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- ALL DISHES SECTION                                      -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <section class="page-section hidden" id="section-foods">
+    <div class="section-header">
+      <h2 class="section-title">All Filipino Dishes</h2>
+      <p class="section-subtitle">Click any dish to view full details and ingredients</p>
+    </div>
+
+    <!-- Category Filter Pills -->
+    <div class="filter-bar" id="filter-bar">
+      <button class="filter-pill active" data-category="all" onclick="filterByCategory('all', this)">All</button>
+    </div>
+
+    <div class="loading-state hidden" id="foods-loading">
+      <div class="spinner"></div>
+      <p>Loading dishes…</p>
+    </div>
+    <div class="error-state hidden" id="foods-error">
+      <span class="error-icon">⚠️</span>
+      <p id="foods-error-msg">Failed to load dishes. Check your API connection.</p>
+    </div>
+    <div class="food-grid" id="food-grid"></div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- CATEGORIES SECTION                                      -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <section class="page-section hidden" id="section-categories">
+    <div class="section-header">
+      <h2 class="section-title">Browse by Category</h2>
+      <p class="section-subtitle">Explore Filipino dishes organized by type</p>
+    </div>
+    <div class="loading-state hidden" id="categories-loading">
+      <div class="spinner"></div><p>Loading categories…</p>
+    </div>
+    <div class="error-state hidden" id="categories-error">
+      <span class="error-icon">⚠️</span>
+      <p id="categories-error-msg">Failed to load categories.</p>
+    </div>
+    <div class="category-grid" id="category-grid"></div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- SEARCH SECTION                                          -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <section class="page-section hidden" id="section-search">
+    <div class="section-header">
+      <h2 class="section-title">Search Dishes</h2>
+      <p class="section-subtitle">Find your favorite Filipino food by name</p>
+    </div>
+    <div class="search-box-wrapper">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" class="search-input" placeholder="e.g. Adobo, Sinigang, Kare-Kare…" autocomplete="off" />
+        <button class="btn btn-primary search-btn" id="search-btn" onclick="searchFoods()">Search</button>
+      </div>
+    </div>
+    <div class="loading-state hidden" id="search-loading">
+      <div class="spinner"></div><p>Searching…</p>
+    </div>
+    <div class="search-empty hidden" id="search-empty">
+      <span class="empty-icon">🍽️</span>
+      <p>No dishes found. Try a different keyword.</p>
+    </div>
+    <div class="error-state hidden" id="search-error">
+      <span class="error-icon">⚠️</span>
+      <p id="search-error-msg">Search failed.</p>
+    </div>
+    <div class="food-grid" id="search-results"></div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- FOOD DETAIL MODAL                                       -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="modal-overlay hidden" id="modal-overlay" onclick="closeModal()">
+    <div class="modal" id="food-modal" onclick="event.stopPropagation()">
+      <button class="modal-close" id="modal-close-btn" onclick="closeModal()">✕</button>
+      <div class="modal-loading hidden" id="modal-loading">
+        <div class="spinner"></div><p>Loading details…</p>
+      </div>
+      <div class="modal-body hidden" id="modal-body">
+        <div class="modal-meta">
+          <span class="modal-category" id="modal-category"></span>
+          <span class="modal-origin" id="modal-origin"></span>
+        </div>
+        <h2 class="modal-title" id="modal-title"></h2>
+        <div class="modal-section">
+          <h3 class="modal-section-label">🥬 Ingredients</h3>
+          <ul class="ingredient-list" id="modal-ingredients"></ul>
+        </div>
+        <div class="modal-section">
+          <h3 class="modal-section-label">📋 Instructions</h3>
+          <p class="modal-instructions" id="modal-instructions"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- FOOTER / ACKNOWLEDGMENT                                 -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="brand-icon">🍲</span>
+        <span>Filipino Cookbook</span>
+      </div>
+      <div class="footer-acknowledgment">
+        <p class="ack-label">API Source &amp; Acknowledgment</p>
+        <p>This application uses the <strong>Filipino Cookbook API</strong> developed by:</p>
+        <p><strong>Developer:</strong> Freddierick Emil G. Ordoño</p>
+        <p><strong>GitHub:</strong>
+          <a href="https://github.com/ordonofreddierick-bot/filipino-cookbook-api-ordono" target="_blank" rel="noopener" id="api-repo-link">
+            filipino-cookbook-api-ordono
+          </a>
+        </p>
+        <p class="ack-note">Used for educational purposes with the permission of the developer.</p>
+      </div>
+      <div class="footer-dev">
+        <p class="ack-label">Client Developer</p>
+        <p><strong>John Louie Rimando</strong></p>
+        <p>BS Information Technology 4-A</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Filipino Cookbook Client · Built with HTML, CSS &amp; JavaScript</p>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+﻿# Filipino Cookbook — Client Application
+
+A premium web-based client application that consumes the **Filipino Cookbook API** to display traditional Filipino dishes, ingredients, categories, and recipes in a beautifully designed user interface.
+
+---
+
+## Table of Contents
+
+1. [Application Title](#application-title)
+2. [Application Description](#application-description)
+3. [Technologies Used](#technologies-used)
+4. [Project Structure](#project-structure)
+5. [Installation Instructions](#installation-instructions)
+6. [API Endpoints Used](#api-endpoints-used)
+7. [Screenshots](#screenshots)
+8. [API Source and Acknowledgment](#api-source-and-acknowledgment)
+9. [Developer Information](#developer-information)
+
+---
+
+## Application Title
+
+**Filipino Cookbook — Discover Filipino Cuisine**
+
+---
+
+## Application Description
+
+The **Filipino Cookbook Client Application** is a single-page web application that acts as a driver/client for the Filipino Cookbook API. It retrieves and presents authentic Filipino food data through an elegant, dark-themed user interface.
+
+- **Purpose:** Provide a visual, user-friendly interface for browsing Filipino food data served by the API.
+- **API Used:** Filipino Cookbook API by Freddierick Emil G. Ordono
+- **Major Features:**
+  - Browse all Filipino dishes in a responsive card grid
+  - Filter dishes by food category (Main Dish, Soup, Dessert, etc.)
+  - Search for dishes by name using a real-time search input
+  - View full recipe details including ingredients and cooking instructions in a modal dialog
+  - Animated live statistics (total dishes, categories, ingredients)
+- **Intended Users:** Students and developers evaluating the API, or anyone interested in exploring Filipino cuisine.
+
+---
+
+## Technologies Used
+
+| Technology | Purpose |
+|---|---|
+| HTML5 | Application structure and markup |
+| CSS3 (Vanilla) | Styling, animations, responsive layout |
+| JavaScript (ES6+) | API calls, DOM manipulation, routing |
+| Fetch API | HTTP requests to the Filipino Cookbook API |
+| Google Fonts (Playfair Display + Inter) | Typography |
+| Git & GitHub | Version control and repository hosting |
+
+---
+
+## Project Structure
+
+```
+filipino-cookbook-client-rimando/
+├── css/
+│   └── style.css          # All styles — dark theme, animations, responsive
+├── js/
+│   ├── config.js          # API base URL and Bearer token configuration
+│   └── app.js             # Application logic — fetch, render, navigation
+├── screenshots/           # UI screenshots
+├── .gitignore             # Ignores OS and editor files
+├── index.html             # Main application entry point
+└── README.md              # This file
+```
+
+---
+
+## Installation Instructions
+
+### Prerequisites
+
+- A running instance of the [Filipino Cookbook API](https://github.com/ordonofreddierick-bot/filipino-cookbook-api-ordono)
+- XAMPP (Apache) or any local web server
+- A modern web browser (Chrome, Firefox, Edge)
+
+### Step 1 — Clone the Repository
+
+```bash
+git clone https://github.com/johnlouierimando/filipino-cookbook-client-rimando.git
+cd filipino-cookbook-client-rimando
+```
+
+### Step 2 — Place in XAMPP Directory
+
+Copy or move the project into your XAMPP htdocs folder:
+
+```
+C:\xampp\htdocs\filipino-cookbook-client-rimando\
+```
+
+### Step 3 — Set Up the API First
+
+Make sure the Filipino Cookbook API is installed and running. Follow the installation instructions at:
+
+https://github.com/ordonofreddierick-bot/filipino-cookbook-api-ordono
+
+The API must be accessible at:
+```
+http://localhost/filipino-cookbook-api-ordono/public
+```
+
+### Step 4 — Configure the API Connection
+
+Open `js/config.js` and verify the base URL and token match your installed API:
+
+```javascript
+const API_CONFIG = {
+  baseUrl: 'http://localhost/filipino-cookbook-api-ordono/public',
+  token:   'dmmmsu-cookbook-token-2026',
+  headers: {
+    'Authorization': 'Bearer dmmmsu-cookbook-token-2026',
+    'Accept':        'application/json',
+    'Content-Type':  'application/json'
+  }
+};
+```
+
+### Step 5 — Start Apache in XAMPP
+
+Open the XAMPP Control Panel and start **Apache**.
+
+### Step 6 — Open the Application
+
+Navigate to:
+
+```
+http://localhost/filipino-cookbook-client-rimando/
+```
+
+The application will load and automatically fetch data from the API.
+
+---
+
+## API Endpoints Used
+
+All requests include the `Authorization: Bearer dmmmsu-cookbook-token-2026` header.
+
+| Method | Endpoint | Description | Used In |
+|---|---|---|---|
+| GET | `/api/foods` | Retrieve all Filipino foods with ingredients | All Dishes page, Stats bar |
+| GET | `/api/foods/{id}` | Retrieve full details of a food by ID | Food detail modal |
+| GET | `/api/foods/search/{name}` | Search foods by partial name match | Search page |
+| GET | `/api/categories` | Retrieve all food categories | Category filter, Categories page |
+| GET | `/api/ingredients` | Retrieve all ingredients | Stats bar (ingredient count) |
+
+---
+
+## Screenshots
+
+> Screenshots of the user interface are included in the `screenshots/` folder.
+
+---
+
+## API Source and Acknowledgment
+
+This client application uses the Filipino Cookbook API developed by:
+
+**Developer:** Freddierick Emil G. Ordono
+
+**GitHub Repository:** https://github.com/ordonofreddierick-bot/filipino-cookbook-api-ordono
+
+The API is used for educational purposes with the permission of the developer.
+
+---
+
+## Developer Information
+
+| Field | Details |
+|---|---|
+| Student Name | John Louie Rimando |
+| Course & Section | BS Information Technology 4-A |
+| GitHub Username | johnlouierimando |
+| Repository Link | https://github.com/johnlouierimando/filipino-cookbook-client-rimando |
+| Date Completed | July 2026 |
+
+---
+
+*Filipino Cookbook Client — Built with HTML, CSS & JavaScript*
