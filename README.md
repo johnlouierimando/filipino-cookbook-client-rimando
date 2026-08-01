@@ -12,9 +12,10 @@ A premium web-based client application that consumes the **Filipino Cookbook API
 4. [Project Structure](#project-structure)
 5. [Installation Instructions](#installation-instructions)
 6. [API Endpoints Used](#api-endpoints-used)
-7. [Screenshots](#screenshots)
-8. [API Source and Acknowledgment](#api-source-and-acknowledgment)
-9. [Developer Information](#developer-information)
+7. [Security Features](#security-features)
+8. [Screenshots](#screenshots)
+9. [API Source and Acknowledgment](#api-source-and-acknowledgment)
+10. [Developer Information](#developer-information)
 
 ---
 
@@ -147,6 +148,31 @@ All requests include the `Authorization: Bearer dmmmsu-cookbook-token-2026` head
 | GET | `/api/foods/search/{name}` | Search foods by partial name match | Search page |
 | GET | `/api/categories` | Retrieve all food categories | Category filter, Categories page |
 | GET | `/api/ingredients` | Retrieve all ingredients | Stats bar (ingredient count) |
+
+---
+
+## Security Features
+
+### Per-IP Rate Limiting (API-Side)
+
+The **Filipino Cookbook API** this client consumes implements a **Per-IP Rate Limiter** on all `/api/*` routes.
+
+| Setting | Value |
+|---|---|
+| Algorithm | Sliding window |
+| Max requests | 30 per IP |
+| Time window | 60 seconds |
+| Response when exceeded | `429 Too Many Requests` |
+
+**How the client handles rate limiting:**
+
+When the API returns `429 Too Many Requests`, the client displays a clear, user-friendly message instead of a generic error:
+
+```
+⏳ Rate limit reached — too many requests. Please wait 60 seconds and try again.
+```
+
+This is handled in `js/app.js` inside the `apiFetch()` function, which checks `res.status === 429` and reads the `Retry-After` header to display the exact wait time.
 
 ---
 

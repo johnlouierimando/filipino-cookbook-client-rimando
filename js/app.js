@@ -20,12 +20,19 @@ let activeSection = 'home';
 async function apiFetch(endpoint) {
   const url = `${API_CONFIG.baseUrl}${endpoint}`;
   const res = await fetch(url, { headers: API_CONFIG.headers });
+
+  if (res.status === 429) {
+    const retryAfter = res.headers.get('Retry-After') || '60';
+    throw new Error(`⏳ Rate limit reached — too many requests. Please wait ${retryAfter} seconds and try again.`);
+  }
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.message || `HTTP ${res.status}`);
   }
   return res.json();
 }
+
 
 // ─────────────────────────────────────────
 // NAVIGATION
