@@ -233,5 +233,3 @@ The API is used for educational purposes with the permission of the developer.
 | Date Completed | July 2026 |
 
 ---
-
-*Filipino Cookbook Client Built with HTML, CSS & JavaScript*
