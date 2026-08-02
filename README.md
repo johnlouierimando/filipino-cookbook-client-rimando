@@ -1,6 +1,6 @@
 # Filipino Cookbook Client Application
 
-A premium web-based client application that consumes the **Filipino Cookbook API** to display traditional Filipino dishes, ingredients, categories, and recipes in a beautifully designed user interface.
+A web-based client application that consumes the **Filipino Cookbook API** to display traditional Filipino dishes, ingredients, categories, and recipes in a designed user interface.
 
 ---
 
@@ -208,14 +208,14 @@ This is handled in `js/app.js` via `checkRateLimit()` (client-side) and `apiFetc
 
 ---
 
-### Ingredients — Ingredients List View
+### Ingredients Ingredients List View
 ![Ingredients page displayed through the application](screenshots/INGREDIENTS.png)
 
 *Additional application view showing API data presented through the user interface.*
 
 ---
 
-### Rate Limiter — Too Many Requests Popup
+### Rate Limiter Too Many Requests Popup
 ![Rate limit popup modal with countdown timer shown in the browser](screenshots/RATE_LIMITER.png)
 
 *When the rate limit of 10 requests per 30 seconds is exceeded, a modal popup appears with a live countdown timer showing exactly how many seconds remain before the user can make requests again.*
