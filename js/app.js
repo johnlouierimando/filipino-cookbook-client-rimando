@@ -280,12 +280,21 @@ function createFoodCard(food, delay = 0) {
 
   const emoji = getCategoryEmoji(food.category_name);
   const ingCount = food.ingredients ? food.ingredients.length : 0;
+  const imgSrc = getFoodImage(food.food_name);
 
   card.innerHTML = `
-    <div class="card-emoji">${emoji}</div>
+    <div class="card-image-wrap">
+      <img
+        class="card-image"
+        src="${imgSrc}"
+        alt="${food.food_name}"
+        loading="lazy"
+        onerror="this.parentElement.innerHTML='<div class=\'card-emoji\'>${emoji}</div>';"
+      />
+      <span class="card-category-badge">${emoji} ${food.category_name}</span>
+    </div>
     <div class="card-body">
       <div class="card-meta">
-        <span class="card-category">${food.category_name}</span>
         <span class="card-origin">📍 ${food.origin_name}</span>
       </div>
       <h3 class="card-title">${food.food_name}</h3>
@@ -450,6 +459,21 @@ async function openFoodDetail(foodId) {
     const food = await apiFetch(`/api/foods/${foodId}`);
     hide(modalLoading);
 
+    // ── Dish image ──────────────────────────────────────────
+    let modalImg = document.getElementById('modal-dish-image');
+    if (!modalImg) {
+      modalImg = document.createElement('img');
+      modalImg.id = 'modal-dish-image';
+      modalImg.className = 'modal-dish-image';
+      modalBody.insertBefore(modalImg, modalBody.firstChild);
+    }
+    const imgSrc = getFoodImage(food.food_name);
+    modalImg.src = imgSrc;
+    modalImg.alt = food.food_name;
+    modalImg.onerror = () => { modalImg.style.display = 'none'; };
+    modalImg.style.display = 'block';
+    // ────────────────────────────────────────────────────────
+
     document.getElementById('modal-title').textContent = food.food_name;
     document.getElementById('modal-category').textContent = food.category_name;
     document.getElementById('modal-origin').textContent = `📍 ${food.origin_name}`;
@@ -494,6 +518,36 @@ function show(el) { el.classList.remove('hidden'); }
 function hide(el) { el.classList.add('hidden'); }
 function truncate(str, len) {
   return str && str.length > len ? str.slice(0, len) + '…' : str;
+}
+
+// ─────────────────────────────────────────
+// DISH IMAGE MAPPER
+// Maps food names to local image files in images/
+// Returns a placeholder emoji div if no match found.
+// ─────────────────────────────────────────
+function getFoodImage(foodName) {
+  const map = {
+    'Adobo':             'images/ADOBO.jpg',
+    'Afritada':          'images/AFRITADA.jpg',
+    'Bicol Express':     'images/BICOL_EXPRESS.jpg',
+    'Bulalo':            'images/BULALO.jpg',
+    'Chicken Inasal':    'images/CHICKEN_INASAL.jpg',
+    'Chopsuey':          'images/CHOPSUEY.jpg',
+    'Dinakdakan':        'images/DINAKDAKAN.jpg',
+    'Dinengdeng':        'images/DINENGDENG.jpg',
+    'Ginataang Gulay':   'images/GINATAANG_GULAY.jpg',
+    'Halo-Halo':         'images/HALO-HALO.jpg',
+    'Kare-Kare':         'images/KARE-KARE.jpg',
+    'Laing':             'images/LAING.jpg',
+    'Lechon Kawali':     'images/LECHONKAWALI.jpg',
+    'Lumpiang Shanghai': 'images/LUMPIA.jpg',
+    'Menudo':            'images/MENUDO.jpg',
+    'Pancit Canton':     'images/PANCIT-CANTON.jpg',
+    'Pinakbet':          'images/PINAKBET.jpg',
+    'Sinigang':          'images/SINIGANG.jpg',
+    'Tinola':            'images/TINOLA.jpg',
+  };
+  return map[foodName] || null;
 }
 
 function getCategoryEmoji(cat) {

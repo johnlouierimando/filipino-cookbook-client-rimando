@@ -407,6 +407,49 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
+/* ── Dish photo header ───────────────────────── */
+.card-image-wrap {
+  position: relative;
+  width: 100%;
+  height: 190px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-3);
+  flex-shrink: 0;
+}
+
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.45s ease;
+}
+
+.food-card:hover .card-image {
+  transform: scale(1.07);
+}
+
+.card-category-badge {
+  position: absolute;
+  bottom: 0.55rem;
+  left: 0.65rem;
+  background: rgba(10, 10, 10, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(244,166,35,0.25);
+  color: var(--gold);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  padding: 0.22rem 0.6rem;
+  border-radius: 100px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+/* ─────────────────────────────────────────────── */
+
 .card-body {
   padding: 1.25rem;
   display: flex;
@@ -687,6 +730,18 @@ body {
   font-size: 0.82rem;
   color: var(--text-muted);
 }
+
+/* ── Dish image in modal ─────────────────────── */
+.modal-dish-image {
+  width: calc(100% + 5rem);
+  margin: -2.5rem -2.5rem 1.75rem -2.5rem;
+  height: 260px;
+  object-fit: cover;
+  display: block;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-bottom: 1px solid rgba(244,166,35,0.2);
+}
+/* ─────────────────────────────────────────────── */
 
 .modal-title {
   font-family: var(--font-serif);
