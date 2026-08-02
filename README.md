@@ -187,35 +187,35 @@ This is handled in `js/app.js` via `checkRateLimit()` (client-side) and `apiFetc
 
 ---
 
-### All Dishes — Food Grid with Category Filter
+### All Dishes Food Grid with Category Filter
 ![All Dishes page showing food cards with actual dish photos and category filter pills](screenshots/ALL_DISHES_UPDATED.png)
 
 *Responsive food card grid with category filter pills at the top. Each card displays the actual dish photo with a category badge overlay, dish name, regional origin, instructions preview, and a "View Recipe" button.*
 
 ---
 
-### Categories — Browse by Category
+### Categories Browse by Category
 ![Categories page showing category cards with representative dish photos](screenshots/CATEGORIES_UPDATED.png)
 
 *Category cards each showing a representative dish photo (e.g. Lumpiang Shanghai for Appetizer, Sinigang for Soup). Clicking any card navigates directly to the filtered dish list for that category.*
 
 ---
 
-### Search — Search Dishes by Name
+### Search Search Dishes by Name
 ![Search page showing search input and filtered results](screenshots/SEARCH_DISHES.png)
 
 *Search interface that performs a partial-name match against the API's search endpoint.*
 
 ---
 
-### Ingredients — Dish Detail Modal
+### Ingredients Dish Detail Modal
 ![Ingredients and recipe detail modal showing dish photo, ingredients list, and instructions](screenshots/INGREDIENTS.png)
 
 *Clicking "View Recipe" on any dish card opens a modal with the dish photo hero image, full ingredients list, and step-by-step cooking instructions.*
 
 ---
 
-### Rate Limiter — Too Many Requests Popup
+### Rate Limiter Too Many Requests Popup
 ![Rate limit popup modal with countdown timer shown in the browser](screenshots/RATE_LIMITER.png)
 
 *When the rate limit of 10 requests per 30 seconds is exceeded, a modal popup appears with a live countdown timer showing exactly how many seconds remain before the user can make requests again.*
