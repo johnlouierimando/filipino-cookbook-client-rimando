@@ -188,7 +188,7 @@ This is handled in `js/app.js` via `checkRateLimit()` (client-side) and `apiFetc
 ---
 
 ### All Dishes — Food Grid with Category Filter
-![All Dishes page showing food cards with actual dish photos and category filter pills](screenshots/ALL_DISHES.png)
+![All Dishes page showing food cards with actual dish photos and category filter pills](screenshots/ALL_DISHES_UPDATED.png)
 
 *Responsive food card grid with category filter pills at the top. Each card displays the actual dish photo with a category badge overlay, dish name, regional origin, instructions preview, and a "View Recipe" button.*
 
