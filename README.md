@@ -160,19 +160,21 @@ The **Filipino Cookbook API** this client consumes implements a **Per-IP Rate Li
 | Setting | Value |
 |---|---|
 | Algorithm | Sliding window |
-| Max requests | 30 per IP |
-| Time window | 60 seconds |
+| Max requests | 10 per IP |
+| Time window | 30 seconds |
 | Response when exceeded | `429 Too Many Requests` |
+
+**Client-side pre-check:** The client also tracks requests locally in JavaScript and shows the popup **before** the API call is even made — preventing unnecessary network requests.
 
 **How the client handles rate limiting:**
 
-When the API returns `429 Too Many Requests`, the client displays a clear, user-friendly message instead of a generic error:
+When the rate limit is hit, the client displays a polished popup modal with a live countdown timer:
 
 ```
-⏳ Rate limit reached — too many requests. Please wait 60 seconds and try again.
+⏳ Rate limit reached — too many requests. Please wait 30 seconds and try again.
 ```
 
-This is handled in `js/app.js` inside the `apiFetch()` function, which checks `res.status === 429` and reads the `Retry-After` header to display the exact wait time.
+This is handled in `js/app.js` via `checkRateLimit()` (client-side) and `apiFetch()` (API-side 429 fallback), which reads the `Retry-After` header to display the exact wait time.
 
 ---
 
@@ -206,10 +208,17 @@ This is handled in `js/app.js` inside the `apiFetch()` function, which checks `r
 
 ---
 
-### Ingredients Ingredients List View
+### Ingredients — Ingredients List View
 ![Ingredients page displayed through the application](screenshots/INGREDIENTS.png)
 
 *Additional application view showing API data presented through the user interface.*
+
+---
+
+### Rate Limiter — Too Many Requests Popup
+![Rate limit popup modal with countdown timer shown in the browser](screenshots/RATE_LIMITER.png)
+
+*When the rate limit of 10 requests per 30 seconds is exceeded, a modal popup appears with a live countdown timer showing exactly how many seconds remain before the user can make requests again.*
 
 
 ---

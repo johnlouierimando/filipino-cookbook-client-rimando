@@ -9,6 +9,29 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+  <!-- Rate-limit popup keyframes — inlined so they survive CSS cache -->
+  <style>
+    @keyframes rl-in {
+      from { opacity: 0; transform: translateY(-22px) scale(0.94); }
+      to   { opacity: 1; transform: translateY(0)     scale(1); }
+    }
+    @keyframes rl-out {
+      from { opacity: 1; transform: translateY(0)     scale(1); }
+      to   { opacity: 0; transform: translateY(-14px) scale(0.96); }
+    }
+    @keyframes rl-bg-in  { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes rl-bg-out { from { opacity: 1; } to { opacity: 0; } }
+    @keyframes rl-pulse-ring {
+      0%  { box-shadow: 0 0 0 0   rgba(231,76,60,0.55); }
+      70% { box-shadow: 0 0 0 14px rgba(231,76,60,0); }
+      100%{ box-shadow: 0 0 0 0   rgba(231,76,60,0); }
+    }
+    /* popup entry/exit driven by JS class toggle */
+    #rate-limit-popup.popup-show { animation: rl-bg-in  0.25s ease forwards; }
+    #rate-limit-popup.popup-hide { animation: rl-bg-out 0.35s ease forwards; }
+    #rate-limit-popup.popup-show > div { animation: rl-in  0.38s cubic-bezier(0.34,1.45,0.64,1) forwards; }
+    #rate-limit-popup.popup-hide > div { animation: rl-out 0.3s ease forwards; }
+  </style>
 </head>
 <body>
 
@@ -197,6 +220,116 @@
       <p>&copy; 2026 Filipino Cookbook Client · Built with HTML, CSS &amp; JavaScript</p>
     </div>
   </footer>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- RATE LIMIT POPUP                                        -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="rate-limit-popup" class="hidden" role="alertdialog" aria-modal="true" aria-labelledby="rl-title">
+
+    <!-- Card -->
+    <div style="
+      background: #1E1E1E;
+      border: 1px solid rgba(231,76,60,0.35);
+      border-radius: 16px;
+      box-shadow: 0 0 0 1px rgba(231,76,60,0.1), 0 12px 56px rgba(0,0,0,0.8), 0 0 80px rgba(231,76,60,0.08);
+      width: 100%;
+      max-width: 360px;
+      overflow: hidden;
+      font-family: 'Inter', system-ui, sans-serif;
+      animation: rl-in 0.38s cubic-bezier(0.34,1.45,0.64,1) forwards;
+    ">
+
+      <!-- Top icon area -->
+      <div style="
+        background: #2A2A2A;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+      ">
+        <div style="
+          width: 72px; height: 72px;
+          border-radius: 50%;
+          background: rgba(231,76,60,0.12);
+          border: 2px solid rgba(231,76,60,0.4);
+          display: flex; align-items: center; justify-content: center;
+          animation: rl-pulse-ring 2s ease-out infinite;
+        ">
+          <span style="font-size: 2rem; line-height:1; filter: drop-shadow(0 2px 8px rgba(231,76,60,0.6));">⚠️</span>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div style="height:1px; background: rgba(255,255,255,0.08);"></div>
+
+      <!-- Body -->
+      <div style="padding: 1.25rem 1.4rem 1.4rem;">
+
+        <!-- Meta row -->
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.65rem;">
+          <span style="
+            font-size: 0.68rem; font-weight:600; letter-spacing:0.09em;
+            color: #E74C3C;
+            background: rgba(231,76,60,0.14);
+            border: 1px solid rgba(231,76,60,0.28);
+            border-radius: 99px; padding: 0.22rem 0.65rem;
+            text-transform: uppercase;
+          ">RATE LIMITED</span>
+          <span style="font-size:0.8rem; color:#9A8E7E;">🔒 10 req / 30s</span>
+        </div>
+
+        <!-- Title -->
+        <h2 id="rl-title" style="
+          font-family: 'Playfair Display', Georgia, serif;
+          font-size: 1.55rem; font-weight:700;
+          color: #F5F0E8; margin: 0 0 0.5rem; line-height:1.2;
+        ">Too Many Requests</h2>
+
+        <!-- Message -->
+        <p style="font-size:0.88rem; color:#9A8E7E; line-height:1.6; margin:0 0 1.1rem;">
+          You've hit the request limit. Please wait a moment before continuing to explore Filipino recipes.
+        </p>
+
+        <!-- Progress bar -->
+        <div style="
+          height:4px; background:rgba(255,255,255,0.06);
+          border-radius:99px; overflow:hidden; margin-bottom:1.15rem;
+        ">
+          <div id="rate-limit-bar" style="
+            height:100%; width:100%;
+            background: linear-gradient(90deg,#7B241C,#E74C3C,#F4A623);
+            border-radius:99px; transition: width 1s linear;
+          "></div>
+        </div>
+
+        <!-- Footer -->
+        <div style="
+          display:flex; align-items:center; justify-content:space-between;
+          border-top:1px solid rgba(255,255,255,0.08); padding-top:1rem;
+        ">
+          <span style="font-size:0.83rem; color:#9A8E7E; display:flex; align-items:center; gap:0.3rem;">
+            ⏱ Try again in
+            <strong id="rate-limit-countdown" style="
+              font-family:'Playfair Display',Georgia,serif;
+              font-size:1.15rem; color:#E74C3C; font-weight:700;
+            ">30</strong>s
+          </span>
+          <button id="rate-limit-dismiss-btn" onclick="closeRateLimitPopup()"
+            onmouseover="this.style.background='rgba(244,166,35,0.12)'; this.style.color='#FFD07A';"
+            onmouseout="this.style.background='none'; this.style.color='#F4A623';"
+            style="
+              background:none; border:none; cursor:pointer;
+              font-family:'Inter',system-ui,sans-serif;
+              font-size:0.85rem; font-weight:600;
+              color:#F4A623; padding:0.35rem 0.7rem;
+              border-radius:8px; transition: all 0.2s ease;
+              letter-spacing:0.01em;
+          ">Dismiss ✕</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
 
   <script src="js/config.js"></script>
   <script src="js/app.js"></script>

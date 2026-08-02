@@ -10,20 +10,162 @@
 // ─────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────
-let allFoods      = [];
+let allFoods = [];
 let allCategories = [];
 let activeSection = 'home';
+
+// ─────────────────────────────────────────
+// CLIENT-SIDE RATE LIMITER
+// ─────────────────────────────────────────
+const RATE_LIMIT = {
+  maxRequests: 10,      // max requests allowed
+  windowMs: 30 * 1000,  // per 30 seconds
+  timestamps: [],       // sliding window of request timestamps
+};
+
+function checkRateLimit() {
+  const now = Date.now();
+  // Remove timestamps outside the current window
+  RATE_LIMIT.timestamps = RATE_LIMIT.timestamps.filter(
+    t => now - t < RATE_LIMIT.windowMs
+  );
+  if (RATE_LIMIT.timestamps.length >= RATE_LIMIT.maxRequests) {
+    const oldest = RATE_LIMIT.timestamps[0];
+    const waitMs = RATE_LIMIT.windowMs - (now - oldest);
+    const waitSec = Math.ceil(waitMs / 1000);
+    showRateLimitPopup(waitSec);
+    return false;
+  }
+  RATE_LIMIT.timestamps.push(now);
+  return true;
+}
+
+// ─────────────────────────────────────────
+// RATE LIMIT POPUP — dynamically injected
+// ─────────────────────────────────────────
+let _rateLimitCountdownTimer = null;
+
+function showRateLimitPopup(waitSeconds) {
+  if (_rateLimitCountdownTimer) clearInterval(_rateLimitCountdownTimer);
+
+  // Remove any existing popup
+  const old = document.getElementById('rate-limit-popup');
+  if (old) old.remove();
+
+  let remaining = waitSeconds;
+  const total   = waitSeconds;
+
+  // Build overlay as a direct <body> child so position:fixed always works
+  const overlay = document.createElement('div');
+  overlay.id = 'rate-limit-popup';
+
+  // Apply all critical layout styles via cssText — no external CSS dependency
+  overlay.style.cssText =
+    'position:fixed;top:0;left:0;right:0;bottom:0;' +
+    'width:100vw;height:100vh;z-index:999999;' +
+    'display:flex;align-items:center;justify-content:center;' +
+    'background:rgba(0,0,0,0.72);' +
+    'backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);' +
+    'box-sizing:border-box;padding:1rem;' +
+    'opacity:0;transition:opacity 0.25s ease;';
+
+  overlay.innerHTML = `
+    <div id="rl-card" style="
+      background:#1E1E1E;
+      border:1px solid rgba(231,76,60,0.35);
+      border-radius:16px;
+      box-shadow:0 0 0 1px rgba(231,76,60,0.1),0 12px 56px rgba(0,0,0,0.85),0 0 80px rgba(231,76,60,0.08);
+      width:100%;max-width:360px;overflow:hidden;
+      font-family:'Inter',system-ui,sans-serif;
+      transform:translateY(-20px) scale(0.95);
+      transition:transform 0.38s cubic-bezier(0.34,1.45,0.64,1),opacity 0.35s ease;
+      opacity:0;">
+
+      <div style="background:#2A2A2A;display:flex;align-items:center;justify-content:center;padding:2rem 1rem;">
+        <div style="width:72px;height:72px;border-radius:50%;background:rgba(231,76,60,0.12);border:2px solid rgba(231,76,60,0.4);display:flex;align-items:center;justify-content:center;">
+          <span style="font-size:2rem;line-height:1;">⚠️</span>
+        </div>
+      </div>
+
+      <div style="height:1px;background:rgba(255,255,255,0.08);"></div>
+
+      <div style="padding:1.25rem 1.4rem 1.4rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.65rem;">
+          <span style="font-size:0.68rem;font-weight:600;letter-spacing:0.09em;color:#E74C3C;background:rgba(231,76,60,0.14);border:1px solid rgba(231,76,60,0.28);border-radius:99px;padding:0.22rem 0.65rem;text-transform:uppercase;">RATE LIMITED</span>
+          <span style="font-size:0.8rem;color:#9A8E7E;">🔒 10 req / 30s</span>
+        </div>
+
+        <h2 style="font-family:'Playfair Display',Georgia,serif;font-size:1.55rem;font-weight:700;color:#F5F0E8;margin:0 0 0.5rem;line-height:1.2;">Too Many Requests</h2>
+
+        <p style="font-size:0.88rem;color:#9A8E7E;line-height:1.6;margin:0 0 1.1rem;">
+          You've hit the request limit. Please wait a moment before continuing to explore Filipino recipes.
+        </p>
+
+        <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden;margin-bottom:1.15rem;">
+          <div id="rate-limit-bar" style="height:100%;width:100%;background:linear-gradient(90deg,#7B241C,#E74C3C,#F4A623);border-radius:99px;transition:width 1s linear;"></div>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.08);padding-top:1rem;">
+          <span style="font-size:0.83rem;color:#9A8E7E;display:flex;align-items:center;gap:0.3rem;">
+            ⏱ Try again in
+            <strong id="rate-limit-countdown" style="font-family:'Playfair Display',Georgia,serif;font-size:1.15rem;color:#E74C3C;font-weight:700;">${remaining}</strong>s
+          </span>
+          <button onclick="closeRateLimitPopup()"
+            onmouseover="this.style.background='rgba(244,166,35,0.12)';this.style.color='#FFD07A';"
+            onmouseout="this.style.background='none';this.style.color='#F4A623';"
+            style="background:none;border:none;cursor:pointer;font-family:'Inter',system-ui,sans-serif;font-size:0.85rem;font-weight:600;color:#F4A623;padding:0.35rem 0.7rem;border-radius:8px;transition:all 0.2s ease;">
+            Dismiss ✕
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  // Animate in on next paint frame
+  requestAnimationFrame(() => {
+    overlay.style.opacity = '1';
+    const card = document.getElementById('rl-card');
+    if (card) { card.style.opacity = '1'; card.style.transform = 'translateY(0) scale(1)'; }
+  });
+
+  _rateLimitCountdownTimer = setInterval(() => {
+    remaining--;
+    const cd  = document.getElementById('rate-limit-countdown');
+    const bar = document.getElementById('rate-limit-bar');
+    if (cd)  cd.textContent  = remaining;
+    if (bar) bar.style.width = `${Math.max(0, (remaining / total) * 100)}%`;
+    if (remaining <= 0) { clearInterval(_rateLimitCountdownTimer); closeRateLimitPopup(); }
+  }, 1000);
+}
+
+function closeRateLimitPopup() {
+  if (_rateLimitCountdownTimer) clearInterval(_rateLimitCountdownTimer);
+  const overlay = document.getElementById('rate-limit-popup');
+  if (!overlay) return;
+  const card = document.getElementById('rl-card');
+  overlay.style.opacity = '0';
+  if (card) { card.style.opacity = '0'; card.style.transform = 'translateY(-14px) scale(0.96)'; }
+  setTimeout(() => { const el = document.getElementById('rate-limit-popup'); if (el) el.remove(); }, 350);
+}
 
 // ─────────────────────────────────────────
 // UTILITY: fetch wrapper with auth headers
 // ─────────────────────────────────────────
 async function apiFetch(endpoint) {
+  // Client-side rate limit check
+  if (!checkRateLimit()) {
+    throw new Error('Rate limit exceeded. Please wait before making more requests.');
+  }
+
   const url = `${API_CONFIG.baseUrl}${endpoint}`;
   const res = await fetch(url, { headers: API_CONFIG.headers });
 
   if (res.status === 429) {
-    const retryAfter = res.headers.get('Retry-After') || '60';
-    throw new Error(`⏳ Rate limit reached — too many requests. Please wait ${retryAfter} seconds and try again.`);
+    const retryAfter = parseInt(res.headers.get('Retry-After') || '30', 10);
+    showRateLimitPopup(retryAfter);
+    throw new Error(`Too many requests. Please wait ${retryAfter} seconds and try again.`);
   }
 
   if (!res.ok) {
@@ -38,13 +180,11 @@ async function apiFetch(endpoint) {
 // NAVIGATION
 // ─────────────────────────────────────────
 function showSection(name) {
-  // hide all page sections
   document.querySelectorAll('.page-section').forEach(s => s.classList.add('hidden'));
   document.getElementById('section-home').classList.add('hidden');
 
   activeSection = name;
 
-  // update nav links
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
   const activeLink = document.getElementById(`nav-${name}`);
   if (activeLink) activeLink.classList.add('active');
@@ -57,8 +197,7 @@ function showSection(name) {
     const section = document.getElementById(`section-${name}`);
     if (section) {
       section.classList.remove('hidden');
-      // Always render — data may already be cached from stats, but grid needs to be populated
-      if (name === 'foods')      loadFoods();
+      if (name === 'foods') loadFoods();
       if (name === 'categories') loadCategories();
     }
   }
@@ -76,10 +215,10 @@ async function loadStats() {
       apiFetch('/api/categories'),
       apiFetch('/api/ingredients')
     ]);
-    animateCounter('stat-foods',       foods.length);
-    animateCounter('stat-categories',  categories.length);
+    animateCounter('stat-foods', foods.length);
+    animateCounter('stat-categories', categories.length);
     animateCounter('stat-ingredients', ingredients.length);
-    allFoods      = foods;
+    allFoods = foods;
     allCategories = categories;
   } catch (e) {
     console.warn('Stats load failed:', e.message);
@@ -87,9 +226,9 @@ async function loadStats() {
 }
 
 function animateCounter(id, target) {
-  const el    = document.getElementById(id);
+  const el = document.getElementById(id);
   let current = 0;
-  const step  = Math.ceil(target / 30);
+  const step = Math.ceil(target / 30);
   const timer = setInterval(() => {
     current += step;
     if (current >= target) { current = target; clearInterval(timer); }
@@ -101,9 +240,9 @@ function animateCounter(id, target) {
 // LOAD ALL FOODS
 // ─────────────────────────────────────────
 async function loadFoods() {
-  const grid    = document.getElementById('food-grid');
+  const grid = document.getElementById('food-grid');
   const loading = document.getElementById('foods-loading');
-  const error   = document.getElementById('foods-error');
+  const error = document.getElementById('foods-error');
 
   grid.innerHTML = '';
   show(loading); hide(error);
@@ -190,16 +329,16 @@ function filterByCategory(categoryName, btn) {
 // LOAD CATEGORIES
 // ─────────────────────────────────────────
 async function loadCategories() {
-  const grid    = document.getElementById('category-grid');
+  const grid = document.getElementById('category-grid');
   const loading = document.getElementById('categories-loading');
-  const error   = document.getElementById('categories-error');
+  const error = document.getElementById('categories-error');
 
   grid.innerHTML = '';
   show(loading); hide(error);
 
   try {
     if (allCategories.length === 0) allCategories = await apiFetch('/api/categories');
-    if (allFoods.length === 0)      allFoods      = await apiFetch('/api/foods');
+    if (allFoods.length === 0) allFoods = await apiFetch('/api/foods');
     hide(loading);
     renderCategoryCards(allCategories, grid);
   } catch (e) {
@@ -212,7 +351,6 @@ async function loadCategories() {
 function renderCategoryCards(categories, grid) {
   grid.innerHTML = '';
 
-  // ── "All Dishes" card first ──────────────────────────────
   const allCard = document.createElement('div');
   allCard.className = 'category-card category-card-all';
   allCard.innerHTML = `
@@ -225,10 +363,9 @@ function renderCategoryCards(categories, grid) {
   `;
   grid.appendChild(allCard);
 
-  // ── Individual category cards ─────────────────────────────
   categories.forEach((cat, i) => {
     const count = allFoods.filter(f => f.category_name === cat.category_name).length;
-    const card  = document.createElement('div');
+    const card = document.createElement('div');
     card.className = 'category-card';
     card.style.animationDelay = `${(i + 1) * 0.07}s`;
     card.innerHTML = `
@@ -243,13 +380,10 @@ function renderCategoryCards(categories, grid) {
   });
 }
 
-
 function goToCategoryFoods(categoryName) {
   showSection('foods');
-  // slight delay to let section render
   setTimeout(() => {
     if (categoryName === 'all') {
-      // click the All pill
       const allPill = document.querySelector('.filter-pill[data-category="all"]');
       if (allPill) filterByCategory('all', allPill);
     } else {
@@ -264,11 +398,11 @@ function goToCategoryFoods(categoryName) {
 // SEARCH FOODS
 // ─────────────────────────────────────────
 async function searchFoods() {
-  const query   = document.getElementById('search-input').value.trim();
+  const query = document.getElementById('search-input').value.trim();
   const results = document.getElementById('search-results');
   const loading = document.getElementById('search-loading');
-  const empty   = document.getElementById('search-empty');
-  const error   = document.getElementById('search-error');
+  const empty = document.getElementById('search-empty');
+  const error = document.getElementById('search-error');
 
   if (!query) {
     document.getElementById('search-input').focus();
@@ -304,9 +438,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // FOOD DETAIL MODAL
 // ─────────────────────────────────────────
 async function openFoodDetail(foodId) {
-  const overlay      = document.getElementById('modal-overlay');
+  const overlay = document.getElementById('modal-overlay');
   const modalLoading = document.getElementById('modal-loading');
-  const modalBody    = document.getElementById('modal-body');
+  const modalBody = document.getElementById('modal-body');
 
   overlay.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
@@ -316,9 +450,9 @@ async function openFoodDetail(foodId) {
     const food = await apiFetch(`/api/foods/${foodId}`);
     hide(modalLoading);
 
-    document.getElementById('modal-title').textContent       = food.food_name;
-    document.getElementById('modal-category').textContent    = food.category_name;
-    document.getElementById('modal-origin').textContent      = `📍 ${food.origin_name}`;
+    document.getElementById('modal-title').textContent = food.food_name;
+    document.getElementById('modal-category').textContent = food.category_name;
+    document.getElementById('modal-origin').textContent = `📍 ${food.origin_name}`;
     document.getElementById('modal-instructions').textContent = food.instructions;
 
     const ingList = document.getElementById('modal-ingredients');
@@ -337,9 +471,9 @@ async function openFoodDetail(foodId) {
   } catch (e) {
     hide(modalLoading);
     show(modalBody);
-    document.getElementById('modal-title').textContent       = 'Error loading details';
+    document.getElementById('modal-title').textContent = 'Error loading details';
     document.getElementById('modal-instructions').textContent = e.message;
-    document.getElementById('modal-ingredients').innerHTML    = '';
+    document.getElementById('modal-ingredients').innerHTML = '';
   }
 }
 
@@ -364,13 +498,13 @@ function truncate(str, len) {
 
 function getCategoryEmoji(cat) {
   const map = {
-    'Main Dish':     '🍖',
-    'Soup':          '🍲',
-    'Dessert':       '🍮',
-    'Appetizer':     '🥢',
-    'Noodle Dish':   '🍜',
-    'Grilled Dish':  '🔥',
-    'Vegetable Dish':'🥦',
+    'Main Dish': '🍖',
+    'Soup': '🍲',
+    'Dessert': '🍮',
+    'Appetizer': '🥢',
+    'Noodle Dish': '🍜',
+    'Grilled Dish': '🔥',
+    'Vegetable Dish': '🥦',
   };
   return map[cat] || '🍽️';
 }
