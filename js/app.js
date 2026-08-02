@@ -53,7 +53,7 @@ function showRateLimitPopup(waitSeconds) {
   if (old) old.remove();
 
   let remaining = waitSeconds;
-  const total   = waitSeconds;
+  const total = waitSeconds;
 
   // Build overlay as a direct <body> child so position:fixed always works
   const overlay = document.createElement('div');
@@ -132,9 +132,9 @@ function showRateLimitPopup(waitSeconds) {
 
   _rateLimitCountdownTimer = setInterval(() => {
     remaining--;
-    const cd  = document.getElementById('rate-limit-countdown');
+    const cd = document.getElementById('rate-limit-countdown');
     const bar = document.getElementById('rate-limit-bar');
-    if (cd)  cd.textContent  = remaining;
+    if (cd) cd.textContent = remaining;
     if (bar) bar.style.width = `${Math.max(0, (remaining / total) * 100)}%`;
     if (remaining <= 0) { clearInterval(_rateLimitCountdownTimer); closeRateLimitPopup(); }
   }, 1000);
@@ -282,29 +282,59 @@ function createFoodCard(food, delay = 0) {
   const ingCount = food.ingredients ? food.ingredients.length : 0;
   const imgSrc = getFoodImage(food.food_name);
 
-  card.innerHTML = `
-    <div class="card-image-wrap">
-      <img
-        class="card-image"
-        src="${imgSrc}"
-        alt="${food.food_name}"
-        loading="lazy"
-        onerror="this.parentElement.innerHTML='<div class=\'card-emoji\'>${emoji}</div>';"
-      />
-      <span class="card-category-badge">${emoji} ${food.category_name}</span>
+  // ── Image / emoji header ──────────────────────────────────────
+  const wrap = document.createElement('div');
+  wrap.className = 'card-image-wrap';
+
+  if (imgSrc) {
+    const img = document.createElement('img');
+    img.className = 'card-image';
+    img.alt = food.food_name;
+    img.onerror = function () {
+      // Hide broken image, show emoji fallback behind it
+      img.style.display = 'none';
+      wrap.style.background = 'linear-gradient(135deg, var(--surface-3), #222)';
+      const fb = document.createElement('div');
+      fb.className = 'card-emoji';
+      fb.textContent = emoji;
+      wrap.insertBefore(fb, wrap.firstChild);
+    };
+    img.src = imgSrc;   // assign AFTER onerror
+    wrap.appendChild(img);
+  } else {
+    // No image mapping — show emoji
+    wrap.style.background = 'linear-gradient(135deg, var(--surface-3), #222)';
+    const fb = document.createElement('div');
+    fb.className = 'card-emoji';
+    fb.textContent = emoji;
+    wrap.appendChild(fb);
+  }
+
+  // Category badge — always visible on top of image or emoji
+  const badge = document.createElement('span');
+  badge.className = 'card-category-badge';
+  badge.textContent = `${emoji} ${food.category_name}`;
+  wrap.appendChild(badge);
+
+  card.appendChild(wrap);
+  // ─────────────────────────────────────────────────────────────
+
+  // ── Text body ─────────────────────────────────────────────────
+  const body = document.createElement('div');
+  body.className = 'card-body';
+  body.innerHTML = `
+    <div class="card-meta">
+      <span class="card-origin">📍 ${food.origin_name}</span>
     </div>
-    <div class="card-body">
-      <div class="card-meta">
-        <span class="card-origin">📍 ${food.origin_name}</span>
-      </div>
-      <h3 class="card-title">${food.food_name}</h3>
-      <p class="card-preview">${truncate(food.instructions, 90)}</p>
-      <div class="card-footer">
-        <span class="card-ingredients">🥬 ${ingCount} ingredient${ingCount !== 1 ? 's' : ''}</span>
-        <button class="btn-view" onclick="openFoodDetail(${food.food_id})">View Recipe →</button>
-      </div>
+    <h3 class="card-title">${food.food_name}</h3>
+    <p class="card-preview">${truncate(food.instructions, 90)}</p>
+    <div class="card-footer">
+      <span class="card-ingredients">🥬 ${ingCount} ingredient${ingCount !== 1 ? 's' : ''}</span>
+      <button class="btn-view" onclick="openFoodDetail(${food.food_id})">View Recipe →</button>
     </div>
   `;
+  card.appendChild(body);
+
   return card;
 }
 
@@ -360,33 +390,98 @@ async function loadCategories() {
 function renderCategoryCards(categories, grid) {
   grid.innerHTML = '';
 
-  const allCard = document.createElement('div');
-  allCard.className = 'category-card category-card-all';
-  allCard.innerHTML = `
-    <div class="cat-emoji">🍽️</div>
-    <h3 class="cat-name">All Dishes</h3>
-    <p class="cat-count">${allFoods.length} dish${allFoods.length !== 1 ? 'es' : ''}</p>
-    <button class="btn btn-primary cat-btn" onclick="goToCategoryFoods('all')">
-      Browse All →
-    </button>
-  `;
+  // ── "All Dishes" card ─────────────────────────────────────────
+  const allCard = buildCategoryCard({
+    name: 'All Dishes',
+    count: allFoods.length,
+    imgSrc: '/filipino-cookbook-client-rimando/images/ADOBO.jpg',
+    emoji: '🍽️',
+    isAll: true,
+    onClick: "goToCategoryFoods('all')",
+    btnLabel: 'Browse All →',
+    btnClass: 'btn btn-primary cat-btn',
+    delay: 0,
+  });
   grid.appendChild(allCard);
+
+  // ── Per-category images ─────────────────────────────────────────
+  const base = '/filipino-cookbook-client-rimando/images/';
+  const catImageMap = {
+    'Appetizer': base + 'LUMPIA.jpg',
+    'Dessert': base + 'HALO-HALO.jpg',
+    'Grilled Dish': base + 'CHICKEN_INASAL.jpg',
+    'Main Dish': base + 'ADOBO.jpg',
+    'Noodle Dish': base + 'PANCIT-CANTON.jpg',
+    'Soup': base + 'SINIGANG.jpg',
+    'Vegetable Dish': base + 'PINAKBET.jpg',
+  };
 
   categories.forEach((cat, i) => {
     const count = allFoods.filter(f => f.category_name === cat.category_name).length;
-    const card = document.createElement('div');
-    card.className = 'category-card';
-    card.style.animationDelay = `${(i + 1) * 0.07}s`;
-    card.innerHTML = `
-      <div class="cat-emoji">${getCategoryEmoji(cat.category_name)}</div>
-      <h3 class="cat-name">${cat.category_name}</h3>
-      <p class="cat-count">${count} dish${count !== 1 ? 'es' : ''}</p>
-      <button class="btn btn-ghost cat-btn" onclick="goToCategoryFoods('${cat.category_name}')">
-        Browse →
-      </button>
-    `;
+    const card = buildCategoryCard({
+      name: cat.category_name,
+      count,
+      imgSrc: catImageMap[cat.category_name] || null,
+      emoji: getCategoryEmoji(cat.category_name),
+      isAll: false,
+      onClick: `goToCategoryFoods('${cat.category_name}')`,
+      btnLabel: 'Browse →',
+      btnClass: 'btn btn-ghost cat-btn',
+      delay: (i + 1) * 0.07,
+    });
     grid.appendChild(card);
   });
+}
+
+// Builds a single category card with image header
+function buildCategoryCard({ name, count, imgSrc, emoji, isAll, onClick, btnLabel, btnClass, delay }) {
+  const card = document.createElement('div');
+  card.className = isAll ? 'category-card category-card-all' : 'category-card';
+  card.style.animationDelay = `${delay}s`;
+
+  // ── Image header
+  const imgWrap = document.createElement('div');
+  imgWrap.className = 'cat-image-wrap';
+
+  if (imgSrc) {
+    const img = document.createElement('img');
+    img.className = 'cat-image';
+    img.alt = name;
+    img.onerror = function () {
+      img.style.display = 'none';
+      imgWrap.style.background = 'linear-gradient(135deg, var(--surface-3), #222)';
+      const fb = document.createElement('div');
+      fb.className = 'cat-emoji';
+      fb.textContent = emoji;
+      imgWrap.insertBefore(fb, imgWrap.firstChild);
+    };
+    img.src = imgSrc;   // after onerror
+    imgWrap.appendChild(img);
+  } else {
+    imgWrap.style.background = 'linear-gradient(135deg, var(--surface-3), #222)';
+    const fb = document.createElement('div');
+    fb.className = 'cat-emoji';
+    fb.textContent = emoji;
+    imgWrap.appendChild(fb);
+  }
+
+  // Gradient overlay so text is readable over the image
+  const overlay = document.createElement('div');
+  overlay.className = 'cat-image-overlay';
+  imgWrap.appendChild(overlay);
+  card.appendChild(imgWrap);
+
+  // ── Text body
+  const body = document.createElement('div');
+  body.className = 'cat-body';
+  body.innerHTML = `
+    <h3 class="cat-name">${name}</h3>
+    <p class="cat-count">${count} dish${count !== 1 ? 'es' : ''}</p>
+    <button class="${btnClass}" onclick="${onClick}">${btnLabel}</button>
+  `;
+  card.appendChild(body);
+
+  return card;
 }
 
 function goToCategoryFoods(categoryName) {
@@ -468,10 +563,14 @@ async function openFoodDetail(foodId) {
       modalBody.insertBefore(modalImg, modalBody.firstChild);
     }
     const imgSrc = getFoodImage(food.food_name);
-    modalImg.src = imgSrc;
-    modalImg.alt = food.food_name;
     modalImg.onerror = () => { modalImg.style.display = 'none'; };
-    modalImg.style.display = 'block';
+    if (imgSrc) {
+      modalImg.src = imgSrc;
+      modalImg.alt = food.food_name;
+      modalImg.style.display = 'block';
+    } else {
+      modalImg.style.display = 'none';
+    }
     // ────────────────────────────────────────────────────────
 
     document.getElementById('modal-title').textContent = food.food_name;
@@ -526,26 +625,27 @@ function truncate(str, len) {
 // Returns a placeholder emoji div if no match found.
 // ─────────────────────────────────────────
 function getFoodImage(foodName) {
+  const base = '/filipino-cookbook-client-rimando/images/';
   const map = {
-    'Adobo':             'images/ADOBO.jpg',
-    'Afritada':          'images/AFRITADA.jpg',
-    'Bicol Express':     'images/BICOL_EXPRESS.jpg',
-    'Bulalo':            'images/BULALO.jpg',
-    'Chicken Inasal':    'images/CHICKEN_INASAL.jpg',
-    'Chopsuey':          'images/CHOPSUEY.jpg',
-    'Dinakdakan':        'images/DINAKDAKAN.jpg',
-    'Dinengdeng':        'images/DINENGDENG.jpg',
-    'Ginataang Gulay':   'images/GINATAANG_GULAY.jpg',
-    'Halo-Halo':         'images/HALO-HALO.jpg',
-    'Kare-Kare':         'images/KARE-KARE.jpg',
-    'Laing':             'images/LAING.jpg',
-    'Lechon Kawali':     'images/LECHONKAWALI.jpg',
-    'Lumpiang Shanghai': 'images/LUMPIA.jpg',
-    'Menudo':            'images/MENUDO.jpg',
-    'Pancit Canton':     'images/PANCIT-CANTON.jpg',
-    'Pinakbet':          'images/PINAKBET.jpg',
-    'Sinigang':          'images/SINIGANG.jpg',
-    'Tinola':            'images/TINOLA.jpg',
+    'Adobo': base + 'ADOBO.jpg',
+    'Afritada': base + 'AFRITADA.jpg',
+    'Bicol Express': base + 'BICOL_EXPRESS.jpg',
+    'Bulalo': base + 'BULALO.jpg',
+    'Chicken Inasal': base + 'CHICKEN_INASAL.jpg',
+    'Chopsuey': base + 'CHOPSUEY.jpg',
+    'Dinakdakan': base + 'DINAKDAKAN.jpg',
+    'Dinengdeng': base + 'DINENGDENG.jpg',
+    'Ginataang Gulay': base + 'GINATAANG_GULAY.jpg',
+    'Halo-Halo': base + 'HALO-HALO.jpg',
+    'Kare-Kare': base + 'KARE-KARE.jpg',
+    'Laing': base + 'LAING.jpg',
+    'Lechon Kawali': base + 'LECHONKAWALI.jpg',
+    'Lumpiang Shanghai': base + 'LUMPIA.jpg',
+    'Menudo': base + 'MENUDO.jpg',
+    'Pancit Canton': base + 'PANCIT-CANTON.jpg',
+    'Pinakbet': base + 'PINAKBET.jpg',
+    'Sinigang': base + 'SINIGANG.jpg',
+    'Tinola': base + 'TINOLA.jpg',
   };
   return map[foodName] || null;
 }
