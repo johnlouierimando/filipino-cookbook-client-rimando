@@ -1,6 +1,6 @@
 # Filipino Cookbook Client Application
 
-A premium web-based client application that consumes the **Filipino Cookbook API** to display traditional Filipino dishes, ingredients, categories, and recipes in a beautifully designed user interface.
+A web-based client application that consumes the **Filipino Cookbook API** to display traditional Filipino dishes, ingredients, categories, and recipes in a designed user interface.
 
 ---
 
