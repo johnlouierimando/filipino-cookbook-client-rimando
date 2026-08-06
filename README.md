@@ -240,7 +240,7 @@ This is handled in `js/app.js` via `checkRateLimit()` (client-side) and `apiFetc
 
 This client application uses the Filipino Cookbook API developed by:
 
-**Developer:** Freddierick Emil G. Ordono
+**Developer:** Freddierick Emil G. Ordoño
 
 **GitHub Repository:** https://github.com/ordonofreddierick-bot/filipino-cookbook-api-ordono
 
