@@ -149,7 +149,7 @@ All requests include the `Authorization: Bearer dmmmsu-cookbook-token-2026` head
 | GET | `/api/foods/search/{name}` | Search foods by partial name match | Search page |
 | GET | `/api/categories` | Retrieve all food categories | Category filter, Categories page |
 | GET | `/api/ingredients` | Retrieve all ingredients | Stats bar (ingredient count) |
-| POST | `/api/foods` | Add a new food record | Stats bar (ingredient count) |
+| POST | `/api/foods` | Add a new food record | New dishes |
 
 ---
 
