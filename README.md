@@ -58,15 +58,16 @@ The **Filipino Cookbook Client Application** is a single-page web application th
 
 ```
 filipino-cookbook-client-rimando/
-├── css/
-│   └── style.css          # All styles — dark theme, animations, responsive
-├── js/
-│   ├── config.js          # API base URL and Bearer token configuration
-│   └── app.js             # Application logic — fetch, render, navigation
-├── screenshots/           # UI screenshots
-├── .gitignore             # Ignores OS and editor files
 ├── index.html             # Main application entry point
-└── README.md              # This file
+├── README.md              # This file
+├── css/
+│   └── style.css          # Styles — dark theme, animations, responsive
+├── js/
+│   ├── app.js             # Application logic — fetch, render, navigation
+│   └── config.js          # API base URL and token configuration
+├── images/                # Dish and UI images
+├── screenshots/           # UI screenshots
+└── .gitignore             # Ignores OS and editor files
 ```
 
 ---
