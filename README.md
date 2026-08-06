@@ -212,7 +212,7 @@ This is handled in `js/app.js` via `checkRateLimit()` (client-side) and `apiFetc
 ---
 
 ### Dish Ingredients
-![Ingredients and recipe detail modal showing dish photo, ingredients list, and instructions](screenshots/ingredients.png)
+![Ingredients and recipe detail modal showing dish photo, ingredients list, and instructions](screenshots/INGREDIENTS.png)
 
 ---
 
