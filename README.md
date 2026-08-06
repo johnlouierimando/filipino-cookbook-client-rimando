@@ -182,32 +182,57 @@ This is handled in `js/app.js` via `checkRateLimit()` (client-side) and `apiFetc
 ## Screenshots
 
 ### Home
-![Home showing the Filipino Cookbook landing page with title and call-to-action buttons](screenshots/HOME_PUBLIC.png)
+![Home showing the Filipino Cookbook landing page with title and call-to-action buttons](screenshots/home.png)
+
+---
+
+### Home (Alternate View)
+![Alternate home view showing a second layout or UI state](screenshots/home2.png)
 
 ---
 
 ### All Dishes Food Grid with Category Filter
-![All Dishes page showing food cards with actual dish photos and category filter pills](screenshots/ALL_DISHES_UPDATED.png)
+![All Dishes page showing food cards with actual dish photos and category filter pills](screenshots/all_dishes.png)
+
+---
+
+### All Dishes (Alternate View)
+![Second all dishes view showing additional food cards and filters](screenshots/all_dishes2.png)
 
 ---
 
 ### Categories Browse by Category
-![Categories page showing category cards with representative dish photos](screenshots/CATEGORIES_UPDATED.png)
+![Categories page showing category cards with representative dish photos](screenshots/categories.png)
 
 ---
 
-### Search Search Dishes by Name
-![Search page showing search input and filtered results](screenshots/SEARCH_DISHES.png)
+### Search Dishes by Name
+![Search page showing search input and filtered results](screenshots/search_food.png)
 
 ---
 
 ### Dish Ingredients
-![Ingredients and recipe detail modal showing dish photo, ingredients list, and instructions](screenshots/INGREDIENTS.png)
+![Ingredients and recipe detail modal showing dish photo, ingredients list, and instructions](screenshots/ingredients.png)
+
+---
+
+### Add Dish Modal
+![Add dish view showing the recipe submission form](screenshots/add_dish.png)
+
+---
+
+### Add Dish Confirmation / Success
+![Add dish confirmation view showing a completed dish submission or success state](screenshots/add_dish2.png)
+
+---
+
+### Add Dish Example: Chopsuey
+![Add dish example screenshot showing the Chopsuey recipe entry form](screenshots/add_dish_chopsuey.png)
 
 ---
 
 ### Rate Limiter Too Many Requests Popup
-![Rate limit popup modal with countdown timer shown in the browser](screenshots/RATE_LIMITER.png)
+![Rate limit popup modal with countdown timer shown in the browser](screenshots/rate_limiting.png)
 
 ---
 

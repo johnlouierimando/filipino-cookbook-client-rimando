@@ -12,7 +12,33 @@
 // ─────────────────────────────────────────
 let allFoods = [];
 let allCategories = [];
+let allOrigins = [];
+let allIngredients = [];
 let activeSection = 'home';
+
+// User-uploaded dish images (persisted in localStorage, keyed by food_name).
+// The API does not store images, so uploads live on the client only.
+const UPLOADED_IMG_KEY = 'fc_uploaded_dish_images';
+let uploadedImages = loadUploadedImages();
+let pendingUploadDataUrl = null; // image chosen in the Add Dish form, not yet saved
+
+function loadUploadedImages() {
+  try {
+    return JSON.parse(localStorage.getItem(UPLOADED_IMG_KEY)) || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveUploadedImage(foodName, dataUrl) {
+  if (!foodName || !dataUrl) return;
+  uploadedImages[foodName] = dataUrl;
+  try {
+    localStorage.setItem(UPLOADED_IMG_KEY, JSON.stringify(uploadedImages));
+  } catch (e) {
+    console.warn('Could not persist uploaded image (storage full?):', e.message);
+  }
+}
 
 // ─────────────────────────────────────────
 // CLIENT-SIDE RATE LIMITER
@@ -173,6 +199,34 @@ async function apiFetch(endpoint) {
     throw new Error(err.message || `HTTP ${res.status}`);
   }
   return res.json();
+}
+
+// ─────────────────────────────────────────
+// UTILITY: POST wrapper with auth headers
+// ─────────────────────────────────────────
+async function apiPost(endpoint, body) {
+  if (!checkRateLimit()) {
+    throw new Error('Rate limit exceeded. Please wait before making more requests.');
+  }
+
+  const url = `${API_CONFIG.baseUrl}${endpoint}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: API_CONFIG.headers,
+    body: JSON.stringify(body),
+  });
+
+  if (res.status === 429) {
+    const retryAfter = parseInt(res.headers.get('Retry-After') || '30', 10);
+    showRateLimitPopup(retryAfter);
+    throw new Error(`Too many requests. Please wait ${retryAfter} seconds and try again.`);
+  }
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.message || `HTTP ${res.status}`);
+  }
+  return data;
 }
 
 
@@ -607,7 +661,7 @@ function closeModal() {
 
 // Keyboard close (Escape)
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Escape') { closeModal(); closeAddDish(); }
 });
 
 // ─────────────────────────────────────────
@@ -625,6 +679,9 @@ function truncate(str, len) {
 // Returns a placeholder emoji div if no match found.
 // ─────────────────────────────────────────
 function getFoodImage(foodName) {
+  // User-uploaded images (via Add Dish) take priority — they live in localStorage.
+  if (uploadedImages[foodName]) return uploadedImages[foodName];
+
   const base = '/filipino-cookbook-client-rimando/images/';
   const map = {
     'Adobo': base + 'ADOBO.jpg',
@@ -669,6 +726,263 @@ window.addEventListener('scroll', () => {
   if (window.scrollY > 50) nav.classList.add('scrolled');
   else nav.classList.remove('scrolled');
 });
+
+// ─────────────────────────────────────────
+// ADD DISH FEATURE
+// Uses POST /api/foods on the Filipino Cookbook API (ordono).
+// ─────────────────────────────────────────
+let addDishReady = false;
+
+async function openAddDish() {
+  const overlay = document.getElementById('add-overlay');
+  overlay.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  clearAddFeedback();
+
+  // Load category / origin / ingredient options once.
+  if (!addDishReady) {
+    await populateAddDishForm();
+  }
+  updateAddPreview();
+}
+
+function closeAddDish() {
+  document.getElementById('add-overlay').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+// Populate the three checklists from the API.
+async function populateAddDishForm() {
+  try {
+    const [categories, origins, ingredients] = await Promise.all([
+      allCategories.length ? Promise.resolve(allCategories) : apiFetch('/api/categories'),
+      allOrigins.length ? Promise.resolve(allOrigins) : apiFetch('/api/origins'),
+      allIngredients.length ? Promise.resolve(allIngredients) : apiFetch('/api/ingredients'),
+    ]);
+    allCategories = categories;
+    allOrigins = origins;
+    allIngredients = ingredients;
+
+    // Categories — single-select checklist
+    const catBox = document.getElementById('category-checklist');
+    catBox.innerHTML = '';
+    categories.forEach(c => {
+      catBox.appendChild(buildCheckItem(
+        'category', c.category_id,
+        `${getCategoryEmoji(c.category_name)} ${c.category_name}`, false));
+    });
+
+    // Origins — single-select checklist
+    const originBox = document.getElementById('origin-checklist');
+    originBox.innerHTML = '';
+    origins.forEach(o => {
+      originBox.appendChild(buildCheckItem(
+        'origin', o.origin_id, `📍 ${o.origin_name}`, false));
+    });
+
+    // Ingredients — multi-select checklist
+    const ingBox = document.getElementById('ingredient-checklist');
+    ingBox.innerHTML = '';
+    ingredients.forEach(i => {
+      ingBox.appendChild(buildCheckItem(
+        'ingredient', i.ingredient_id, i.ingredient_name, true));
+    });
+
+    addDishReady = true;
+  } catch (e) {
+    showAddFeedback(`Could not load form options: ${e.message}`, 'error');
+  }
+}
+
+// Builds one checklist chip. `multi` controls checkbox vs single-select behaviour.
+function buildCheckItem(group, value, labelText, multi) {
+  const label = document.createElement('label');
+  label.className = 'check-item';
+  label.dataset.group = group;
+  label.dataset.value = value;
+
+  const input = document.createElement('input');
+  input.type = multi ? 'checkbox' : 'radio';
+  input.name = `add-${group}`;
+  input.value = value;
+
+  const span = document.createElement('span');
+  span.textContent = labelText;
+
+  label.appendChild(input);
+  label.appendChild(span);
+
+  label.addEventListener('click', e => {
+    e.preventDefault();
+    if (multi) {
+      input.checked = !input.checked;
+      label.classList.toggle('checked', input.checked);
+    } else {
+      // Single-select: clear siblings in the same group first.
+      document.querySelectorAll(`.check-item[data-group="${group}"]`)
+        .forEach(el => el.classList.remove('checked'));
+      document.querySelectorAll(`input[name="add-${group}"]`)
+        .forEach(el => { el.checked = false; });
+      input.checked = true;
+      label.classList.add('checked');
+    }
+    updateAddPreview();
+  });
+
+  return label;
+}
+
+// Read the current single-selected value for a group (category / origin).
+function getSelectedSingle(group) {
+  const el = document.querySelector(`.check-item[data-group="${group}"].checked`);
+  return el ? el.dataset.value : null;
+}
+
+// Read all checked ingredient IDs.
+function getSelectedIngredientIds() {
+  return [...document.querySelectorAll('.check-item[data-group="ingredient"].checked')]
+    .map(el => parseInt(el.dataset.value, 10));
+}
+
+// Image upload → preview + hold a data URL for later saving.
+function handleImageUpload(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    pendingUploadDataUrl = e.target.result;
+    const preview = document.getElementById('upload-preview');
+    const placeholder = document.getElementById('upload-placeholder');
+    preview.src = pendingUploadDataUrl;
+    preview.classList.remove('hidden');
+    placeholder.classList.add('hidden');
+    updateAddPreview();
+  };
+  reader.readAsDataURL(file);
+}
+
+// Live preview card mirroring the real dish cards.
+function updateAddPreview() {
+  const name = document.getElementById('dish-name-input').value.trim() || 'Dish Name';
+  const instructions = document.getElementById('dish-instructions-input').value.trim();
+
+  const catId = getSelectedSingle('category');
+  const cat = allCategories.find(c => String(c.category_id) === String(catId));
+  const catName = cat ? cat.category_name : 'Category';
+  const emoji = getCategoryEmoji(catName);
+
+  const originId = getSelectedSingle('origin');
+  const origin = allOrigins.find(o => String(o.origin_id) === String(originId));
+  const originName = origin ? origin.origin_name : 'Origin';
+
+  const ingCount = getSelectedIngredientIds().length;
+
+  document.getElementById('preview-title').textContent = name;
+  document.getElementById('preview-instructions').textContent =
+    instructions ? truncate(instructions, 90) : 'Instructions preview will appear here…';
+  document.getElementById('preview-origin').textContent = `📍 ${originName}`;
+  document.getElementById('preview-badge').textContent = `${emoji} ${catName}`;
+  document.getElementById('preview-ingredients').textContent =
+    `🥬 ${ingCount} ingredient${ingCount !== 1 ? 's' : ''}`;
+
+  // Preview image / emoji
+  const wrap = document.getElementById('preview-image-wrap');
+  let img = wrap.querySelector('.card-image');
+  const emojiEl = document.getElementById('preview-emoji');
+  if (pendingUploadDataUrl) {
+    if (!img) {
+      img = document.createElement('img');
+      img.className = 'card-image';
+      wrap.insertBefore(img, wrap.firstChild);
+    }
+    img.src = pendingUploadDataUrl;
+    img.alt = name;
+    img.style.display = 'block';
+    if (emojiEl) emojiEl.style.display = 'none';
+  } else {
+    if (img) img.style.display = 'none';
+    if (emojiEl) { emojiEl.style.display = 'flex'; emojiEl.textContent = emoji; }
+  }
+}
+
+// Submit → POST /api/foods.
+async function submitAddDish(event) {
+  event.preventDefault();
+  clearAddFeedback();
+
+  const name = document.getElementById('dish-name-input').value.trim();
+  const instructions = document.getElementById('dish-instructions-input').value.trim();
+  const categoryId = getSelectedSingle('category');
+  const originId = getSelectedSingle('origin');
+  const ingredientIds = getSelectedIngredientIds();
+
+  // Client-side validation mirroring the API's required fields.
+  if (!name) return showAddFeedback('Please enter a dish name.', 'error');
+  if (!categoryId) return showAddFeedback('Please choose a category.', 'error');
+  if (!originId) return showAddFeedback('Please choose an origin.', 'error');
+  if (!instructions) return showAddFeedback('Please enter cooking instructions.', 'error');
+
+  const payload = {
+    food_name: name,
+    category_id: parseInt(categoryId, 10),
+    origin_id: parseInt(originId, 10),
+    instructions: instructions,
+    ingredient_ids: ingredientIds,
+  };
+
+  const submitBtn = document.getElementById('add-submit-btn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Adding…';
+
+  try {
+    const result = await apiPost('/api/foods', payload);
+
+    // Persist the uploaded image client-side (API stores no image).
+    if (pendingUploadDataUrl) saveUploadedImage(name, pendingUploadDataUrl);
+
+    showAddFeedback(result.message || 'Food added successfully.', 'success');
+
+    // Refresh the dish list so the new card appears in All Dishes.
+    allFoods = await apiFetch('/api/foods');
+    if (activeSection === 'foods') {
+      buildFilterPills(allCategories);
+      renderFoodGrid(allFoods, document.getElementById('food-grid'));
+    }
+
+    setTimeout(() => {
+      resetAddDishForm();
+      closeAddDish();
+      showSection('foods');
+    }, 1100);
+  } catch (e) {
+    showAddFeedback(`Failed to add dish: ${e.message}`, 'error');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Add Dish';
+  }
+}
+
+function resetAddDishForm() {
+  document.getElementById('add-form').reset();
+  pendingUploadDataUrl = null;
+  document.getElementById('upload-preview').classList.add('hidden');
+  document.getElementById('upload-placeholder').classList.remove('hidden');
+  document.querySelectorAll('.check-item.checked').forEach(el => el.classList.remove('checked'));
+  updateAddPreview();
+}
+
+function showAddFeedback(msg, type) {
+  const box = document.getElementById('add-feedback');
+  box.textContent = msg;
+  box.className = `add-feedback ${type}`;
+}
+
+function clearAddFeedback() {
+  const box = document.getElementById('add-feedback');
+  box.textContent = '';
+  box.className = 'add-feedback hidden';
+}
 
 // ─────────────────────────────────────────
 // INIT

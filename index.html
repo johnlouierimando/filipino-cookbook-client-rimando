@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=5" />
+  <link rel="stylesheet" href="css/style.css?v=6" />
   <!-- Rate-limit popup keyframes — inlined so they survive CSS cache -->
   <style>
     @keyframes rl-in {
@@ -48,6 +48,7 @@
       <a href="#" class="nav-link" id="nav-foods" onclick="showSection('foods')">All Dishes</a>
       <a href="#" class="nav-link" id="nav-categories" onclick="showSection('categories')">Categories</a>
       <a href="#" class="nav-link" id="nav-search" onclick="showSection('search')">Search</a>
+      <a href="#" class="nav-link nav-add" id="nav-add" onclick="openAddDish()">＋ Add Dish</a>
     </nav>
   </header>
 
@@ -185,6 +186,100 @@
         <div class="modal-section">
           <h3 class="modal-section-label">📋 Instructions</h3>
           <p class="modal-instructions" id="modal-instructions"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- ADD DISH MODAL                                          -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="modal-overlay hidden" id="add-overlay" onclick="closeAddDish()">
+    <div class="modal add-modal" id="add-modal" onclick="event.stopPropagation()">
+      <button class="modal-close" id="add-close-btn" onclick="closeAddDish()">✕</button>
+
+      <div class="add-header">
+        <span class="add-eyebrow">Contribute a Recipe</span>
+        <h2 class="add-title">Add a New Dish</h2>
+        <p class="add-subtitle">Fill in the details below. Your dish will be posted to the Filipino Cookbook API and appear in All Dishes.</p>
+      </div>
+
+      <div class="add-grid">
+        <!-- ── LEFT: FORM ─────────────────────────────────── -->
+        <form class="add-form" id="add-form" onsubmit="submitAddDish(event)">
+
+          <!-- Image upload -->
+          <div class="form-group">
+            <label class="form-label">Dish Image</label>
+            <label class="upload-zone" id="upload-zone" for="dish-image-input">
+              <input type="file" id="dish-image-input" accept="image/*" hidden onchange="handleImageUpload(this)" />
+              <div class="upload-placeholder" id="upload-placeholder">
+                <span class="upload-icon">🖼️</span>
+                <span class="upload-text">Click to upload an image</span>
+                <span class="upload-hint">PNG or JPG — shown on the dish card</span>
+              </div>
+              <img id="upload-preview" class="upload-preview hidden" alt="Dish preview" />
+            </label>
+          </div>
+
+          <!-- Dish name -->
+          <div class="form-group">
+            <label class="form-label" for="dish-name-input">Dish Name <span class="req">*</span></label>
+            <input type="text" id="dish-name-input" class="form-input" placeholder="e.g. Arroz Caldo" oninput="updateAddPreview()" autocomplete="off" />
+          </div>
+
+          <!-- Categories checklist (single) -->
+          <div class="form-group">
+            <label class="form-label">Category <span class="req">*</span> <span class="form-hint">(choose one)</span></label>
+            <div class="check-grid" id="category-checklist"></div>
+          </div>
+
+          <!-- Origin checklist (single) -->
+          <div class="form-group">
+            <label class="form-label">Origin <span class="req">*</span> <span class="form-hint">(choose one)</span></label>
+            <div class="check-grid" id="origin-checklist"></div>
+          </div>
+
+          <!-- Ingredients checklist (multiple) -->
+          <div class="form-group">
+            <label class="form-label">Ingredients <span class="form-hint">(check all that apply)</span></label>
+            <div class="check-grid check-grid-scroll" id="ingredient-checklist"></div>
+          </div>
+
+          <!-- Instructions -->
+          <div class="form-group">
+            <label class="form-label" for="dish-instructions-input">Instructions <span class="req">*</span></label>
+            <textarea id="dish-instructions-input" class="form-textarea" rows="4" placeholder="Describe how to cook this dish…" oninput="updateAddPreview()"></textarea>
+          </div>
+
+          <div class="add-feedback hidden" id="add-feedback"></div>
+
+          <div class="add-actions">
+            <button type="button" class="btn btn-ghost" onclick="closeAddDish()">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="add-submit-btn">Add Dish</button>
+          </div>
+        </form>
+
+        <!-- ── RIGHT: LIVE PREVIEW CARD ─────────────────────── -->
+        <div class="add-preview-col">
+          <span class="preview-label">Live Preview</span>
+          <div class="food-card add-preview-card" id="add-preview-card">
+            <div class="card-image-wrap" id="preview-image-wrap">
+              <div class="card-emoji" id="preview-emoji">🍽️</div>
+              <span class="card-category-badge" id="preview-badge">🍽️ Category</span>
+            </div>
+            <div class="card-body">
+              <div class="card-meta">
+                <span class="card-origin" id="preview-origin">📍 Origin</span>
+              </div>
+              <h3 class="card-title" id="preview-title">Dish Name</h3>
+              <p class="card-preview" id="preview-instructions">Instructions preview will appear here…</p>
+              <div class="card-footer">
+                <span class="card-ingredients" id="preview-ingredients">🥬 0 ingredients</span>
+                <span class="btn-view">View Recipe →</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -332,6 +427,6 @@
   </div>
 
   <script src="js/config.js"></script>
-  <script src="js/app.js?v=5"></script>
+  <script src="js/app.js?v=6"></script>
 </body>
 </html>
